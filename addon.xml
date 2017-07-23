@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.rugbypass" version="0.0.1" name="Rugbypass" provider-name="ndeadly">
+    <requires>
+        <import addon="xbmc.python" version="2.20.0"/>
+        <import addon="script.module.dateutil" version="2.5.3"/>
+        <import addon="script.module.requests" version="2.12.4"/>
+        <import addon="script.module.m3u8" version="0.2.10"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="addon.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Rugbypass</summary>
+        <description lang="en">A video plugin to play Rugby games from rugbypass.com</description>
+        <assets>
+            <icon>icon.png</icon>
+        </assets>
+    </extension>
+</addon>
