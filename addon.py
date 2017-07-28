@@ -163,21 +163,21 @@ def list_games(future=False):
                                                   format_date(game['date']))
             list_item = xbmcgui.ListItem(item_name)
             list_item.setProperty('IsPlayable', 'true')
-            url = '{0}?action=play&game_id={1}'.format(__url__, game['id'])
+            url = '{0}?action=play&game_id={1}&game_state={2}'.format(__url__, game['id'], game['gameState'])
             listing.append((url, list_item, False))
 
     xbmcplugin.addDirectoryItems(__handle__, listing, len(listing))
     xbmcplugin.endOfDirectory(__handle__)
 
 
-def play_stream(game_id):
+def play_stream(game_id, game_state):
     # Get game link
     form_data = {'gt': '1',
                  'type': 'game',
                  'id': game_id,
                  'nt': '1',
                  'format': 'json',
-                 'gs': '3'}
+                 'gs': game_state}
     request_headers = {'User-Agent': ANDROID_USER_AGENT,
                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
     r = proxy_request(BASE_URL + '/service/publishpoint', session=s, data=form_data, headers=request_headers)
@@ -266,7 +266,7 @@ def main(paramstring):
         action = params.pop('action')
 
         if action == 'play':
-            play_stream(params['game_id'])
+            play_stream(params['game_id'], params['game_state'])
         elif action == 'notify_start':
             notify_start(params['start_time'])
         elif action == 'list_games':
