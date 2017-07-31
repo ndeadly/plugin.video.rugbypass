@@ -117,14 +117,29 @@ def fetch_games(lid):
 def list_event_categories():
     listing = []
 
+    # List any games that are currently live
+    nrl_games = fetch_games('nrl')
+    stateoforigin_games = fetch_games('stateoforigin')
+    games = nrl_games + stateoforigin_games
+    for game in games:
+        if game['gameState'] == 1:
+            item_name = '[LIVE] {0} vs {1}'.format(game['homeTeam']['name'], game['awayTeam']['name'])
+            list_item = xbmcgui.ListItem(item_name)
+            list_item.setProperty('IsPlayable', 'true')
+            list_item.setProperty('IsFolder', 'false')
+            url = '{0}?action=play&game_id={1}&game_state={2}'.format(__url__, game['id'], game['gameState'])
+            listing.append((url, list_item, False))
+
+    # Create menu option for upcoming events
     list_item = xbmcgui.ListItem('Upcoming Events')
     list_item.setInfo('video', {'title': 'Upcoming Events'})
     list_item.setProperty('IsFolder', 'true')
     url = '{0}?action=list_games&future=1'.format(__url__)
     listing.append((url, list_item, True))
 
+    # Create menu option for past events
     list_item = xbmcgui.ListItem('Past Events')
-    list_item.setInfo('video', {'title': 'Upcoming Events'})
+    list_item.setInfo('video', {'title': 'Past Events'})
     list_item.setProperty('IsFolder', 'true')
     url = '{0}?action=list_games&future=0'.format(__url__)
     listing.append((url, list_item, True))
@@ -154,7 +169,7 @@ def list_games(future=False):
             listing.append((url, list_item, False))
     else:
         # Past games
-        games = [g for g in games if g['gameState'] > 0]
+        games = [g for g in games if g['gameState'] == 3]
         games = sorted(games, key=lambda k: k['date'], reverse=True)
 
         for game in games:
