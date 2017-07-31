@@ -26,7 +26,7 @@ __handle__ = int(sys.argv[1])
 __args__ = parse_qs(sys.argv[2][1:])
 
 # Load plugin settings
-settings = xbmcaddon.Addon(id='plugin.video.rugbypass')
+settings = xbmcaddon.Addon(id='plugin.video.rugbypass.nrl')
 PROXY_REQUESTS = settings.getSetting('proxy')
 
 
