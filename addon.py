@@ -189,7 +189,7 @@ def list_games(future=False):
         for game in games:
             item_name = '{0} vs {1} [{2}]'.format(game['homeTeam']['name'],
                                                   game['awayTeam']['name'],
-                                                  format_date(game['date']))
+                                                  format_date(game['dateTimeGMT']))
             list_item = xbmcgui.ListItem(item_name)
             list_item.setProperty('IsPlayable', 'false')
 
@@ -206,7 +206,7 @@ def list_games(future=False):
         for game in games:
             item_name = '{0} vs {1} [{2}]'.format(game['homeTeam']['name'],
                                                   game['awayTeam']['name'],
-                                                  format_date(game['date']))
+                                                  format_date(game['dateTimeGMT']))
             list_item = xbmcgui.ListItem(item_name)
             list_item.setProperty('IsPlayable', 'true')
 
@@ -276,7 +276,7 @@ def play_stream(game_id, game_state):
 
 def notify_start(start_time):
     game_time = dateutil.parser.parse(start_time)
-    game_time.replace(tzinfo=tz.tzutc())
+    game_time = game_time.replace(tzinfo=tz.tzutc())
     dt = game_time - datetime.utcnow()
 
     days = dt.days
@@ -287,7 +287,8 @@ def notify_start(start_time):
 
 def format_date(date_str):
     game_time = dateutil.parser.parse(date_str)
-    game_time.replace(tzinfo=tz.tzutc())
+    game_time = game_time.replace(tzinfo=tz.tzutc())
+    game_time = game_time.astimezone(tz.tzlocal())
     return game_time.strftime('%I:%M%p, %d %B %Y')
 
 
