@@ -13,6 +13,7 @@ from dateutil import tz
 import requests
 import json
 import m3u8
+from PIL import Image
 
 # XBMC
 import xbmc
@@ -29,13 +30,15 @@ __args__ = parse_qs(sys.argv[2][1:])
 settings = xbmcaddon.Addon(id='plugin.video.rugbypass.nrl')
 PROXY_REQUESTS = settings.getSetting('proxy')
 
-
-COOKIE_FILE_LOCATION = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cookies.dat')
+PLUGIN_LOCATION = os.path.dirname(os.path.realpath(__file__))
+COOKIE_FILE_LOCATION = os.path.join(PLUGIN_LOCATION, 'cookies.dat')
+IMAGE_LOCATION = os.path.join(PLUGIN_LOCATION, 'resources', 'img')
 
 DEFAULT_USER_AGENT = 'Safari/537.36 Mozilla/5.0 AppleWebKit/537.36 Chrome/31.0.1650.57'
 ANDROID_USER_AGENT = 'Dalvik/2.1.0 (Linux; U; Android 6.0.1; ONE A2003 Build/MMB29M)'
 
 BASE_URL = 'https://watch.rugbypass.com/'
+CONTENT_LOC = 'http://smb.cdnllnwnl.neulion.com/u/mt1/csmrugby/thumbs'
 
 PROXY_URL = 'http://proxy.bernex.net'
 
@@ -114,6 +117,26 @@ def fetch_games(lid):
     return js['games']
 
 
+def generate_thumbnail(filepath, home_code, away_code):
+    img1 = Image.open(os.path.join(IMAGE_LOCATION, '{0}_el.png'.format(home_code)))
+    img2 = Image.open(os.path.join(IMAGE_LOCATION, '{0}_el.png'.format(away_code)))
+    thumb = Image.new('RGB', (img1.size[0] * 2, img1.size[1]), (255, 255, 255))
+    thumb.paste(img1, (0, 0))
+    thumb.paste(img2, (img1.size[0], 0))
+    thumb.save(filepath, 'png', optimize=True)
+
+
+def get_thumbnail(home_code, away_code):
+    thumb_path = os.path.join(IMAGE_LOCATION, 'generated', '{0}v{1}.png'.format(home_code, away_code))
+    if not os.path.exists(thumb_path):
+        try:
+            generate_thumbnail(thumb_path, home_code, away_code)
+        except IOError:
+            return None
+
+    return thumb_path
+
+
 def list_event_categories():
     listing = []
 
@@ -127,6 +150,10 @@ def list_event_categories():
             list_item = xbmcgui.ListItem(item_name)
             list_item.setProperty('IsPlayable', 'true')
             list_item.setProperty('IsFolder', 'false')
+
+            thumb_path = get_thumbnail(game['homeTeam']['code'], game['awayTeam']['code'])
+            list_item.setArt({'thumb': thumb_path})
+
             url = '{0}?action=play&game_id={1}&game_state={2}'.format(__url__, game['id'], game['gameState'])
             listing.append((url, list_item, False))
 
@@ -165,6 +192,10 @@ def list_games(future=False):
                                                   format_date(game['date']))
             list_item = xbmcgui.ListItem(item_name)
             list_item.setProperty('IsPlayable', 'false')
+
+            thumb_path = get_thumbnail(game['homeTeam']['code'], game['awayTeam']['code'])
+            list_item.setArt({'thumb': thumb_path})
+
             url = '{0}?action=notify_start&start_time={1}'.format(__url__, game['dateTimeGMT'])
             listing.append((url, list_item, False))
     else:
@@ -178,6 +209,10 @@ def list_games(future=False):
                                                   format_date(game['date']))
             list_item = xbmcgui.ListItem(item_name)
             list_item.setProperty('IsPlayable', 'true')
+
+            thumb_path = get_thumbnail(game['homeTeam']['code'], game['awayTeam']['code'])
+            list_item.setArt({'thumb': thumb_path})
+
             url = '{0}?action=play&game_id={1}&game_state={2}'.format(__url__, game['id'], game['gameState'])
             listing.append((url, list_item, False))
 
